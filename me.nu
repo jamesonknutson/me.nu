@@ -34,9 +34,9 @@ $env.nu_menu_commands = {
 # - Invoke it with the keymap (default: Ctrl+Space)
 # - Input your keymap, sequentially to invoke a command
 # - If no match is found, the selection is reset
-# - If the match starts with a Space, the command is not executed 
+# - If the match starts with a Space, the command is not executed
 #   but sent to the command line for further editing
-def-env show_quick_menu [] {
+def --env show_quick_menu [] {
     # Sanity check + error message
     if not ("nu_menu_commands" in $env) {
         print $"\n(ansi red)Error: env.nu_menu_commands is not set!(ansi reset)\n"
@@ -51,8 +51,8 @@ def-env show_quick_menu [] {
 
     # Check unique keys
     if ($keys | length) > ($keys | uniq | length) {
-        let non_unique_cmds = $commands 
-        | group-by keymap | items {|keymap, commands| 
+        let non_unique_cmds = $commands
+        | group-by keymap | items {|keymap, commands|
             if ($commands | length) > 1 {$commands}
         } | where (not ($it | is-empty))
 
@@ -66,13 +66,13 @@ def-env show_quick_menu [] {
         key_color: string   # Highlight color for the keymap
         desc_color: string  # Highlight color for description's Capital letters
     ] -> string {
-        let keymap_box = $command.keymap 
+        let keymap_box = $command.keymap
         | fill -w ($max_len + 2) -a center -c ' '
 
-        let description = $command.description 
+        let description = $command.description
         | str replace -ra '([A-Z])' $'($desc_color)${1}(ansi reset)'
         | str trim
-        
+
         $"($key_color)($keymap_box)(ansi reset) ($description)"
     }
 
@@ -84,9 +84,9 @@ def-env show_quick_menu [] {
         col_w: int = 25         # Commands' fill width
         n_cols: int = 2         # Number of columns per row
     ] -> string {
-        $commands 
+        $commands
         | each { render command $in $key_color $desc_color }
-        | group $n_cols
+        | chunks $n_cols
         | each {|row|
             mut row = $row
             while ($row | length) < $n_cols {
@@ -94,7 +94,7 @@ def-env show_quick_menu [] {
             }
 
             $row
-            | each {$in | fill -w ($col_w) -a left -c ' '} 
+            | each {$in | fill -w ($col_w) -a left -c ' '}
             | str join ''
         }
         | str join "\n"
@@ -116,7 +116,7 @@ def-env show_quick_menu [] {
 
         # Build the menu
         let cmd = ($cmd | str trim)
-        let menu = $commands 
+        let menu = $commands
         | where ($it.keymap | str starts-with $cmd)
         | group-by {$in.group? | default "Other"}
         | items {|group, commands|
@@ -124,7 +124,7 @@ def-env show_quick_menu [] {
         }
         | into record | flatten | into record
         | table -c
-        
+
         let command_line = $"($prompt_left)(ansi reset) ($cmd)"
 
         # Build the menu and the "command line"
@@ -146,18 +146,18 @@ def-env show_quick_menu [] {
     print -n $"(ansi csi)s"  # Save cursor
     while (($cmd == '') or (not (($cmd | str trim) in $keys))) {
         # Print menu and wait input
-        print -n (render full $cmd $edit_mode)         
+        print -n (render full $cmd $edit_mode)
         let i = (input listen -t [key]).code
 
 
         # If Esc or Enter, clear and quit
         if ($i in ["esc" "enter"]) {
             print -n $"(ansi csi)u(ansi csi)0J"
-            return 
+            return
         }
 
         # Space toggles edit mode
-        if ($i == " ") { 
+        if ($i == " ") {
             $edit_mode = (not $edit_mode )
             continue
         }
@@ -184,17 +184,17 @@ def-env show_quick_menu [] {
 
     # Execute the command closure,
     # or set the command line if starts with space
-    let command = $commands 
-    | where keymap == ($cmd | str trim) 
-    | first 
+    let command = $commands
+    | where keymap == ($cmd | str trim)
+    | first
     | get command
 
     if $edit_mode {
         view source $command
-        | str trim 
+        | str trim
         | str replace -rma '^{|}$' ''
         | str trim
-        | commandline $in
+        | commandline edit --replace $in
     } else {
         do --env $command
     }

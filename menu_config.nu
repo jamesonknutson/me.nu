@@ -6,9 +6,9 @@
 #   - vim / micro (* for micro edit fzf-code last two lines)
 
 # Cd directories using fzf and fd
-def-env fzf-dir [] {(
+def --env fzf-dir [] {(
     (fd -d 4 -c always --type directory)
-    | (fzf --preview "fd -d 1 -c always . {}" 
+    | (fzf --preview "fd -d 1 -c always . {}"
         --ansi --layout reverse --tiebreak length,chunk)
     | cd $in
 )}
@@ -27,7 +27,7 @@ def fzf-code [
     let pwd_len = $env.PWD | path split | length
     if ($env.PWD == ("~" | path expand) or $pwd_len < 4) {
         let v = (
-            [no yes] 
+            [no yes]
             | input list "You are grepping in ~, are you sure you want to do that?"
         )
         if ($v != "yes") { return }
@@ -43,19 +43,19 @@ def fzf-code [
     }
 
     # Ripgrep
-    ( rg ($flags) 
+    ( rg ($flags)
         --line-number --with-filename --color=always
         --field-match-separator ' ' --max-depth ($max_depth)
         ($query)
     )
     # Fzf + bat
-    | ( fzf --ansi 
+    | ( fzf --ansi
         --preview-window 'up,60%,border-bottom,+{2}+3/3,~3'
         --preview "bat --color always {1} --highlight-line {2}"
         --exact
     )
     # Parse fzf out
-    | parse "{file} {line} {code}" | first 
+    | parse "{file} {line} {code}" | first
     # Open editor
     | vim $"+($in.line)" $in.file
     # | micro -parsecursor true $"($in.file):($in.line)"
