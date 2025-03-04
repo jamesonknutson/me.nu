@@ -11,23 +11,6 @@ $env.config.keybindings ++= [{
     }
 }]
 
-const example_config = '
-# Example config. Place it in your `config.nu`
-$env.nu_menu_commands = {
-    {
-        description: "Refresh nu"
-        keymap: "r"
-        command: { nu }
-    }
-    {
-        description: "Git Status"
-        keymap: "gs"
-        command: { git status }
-        group: "Git"
-    }
-}
-'
-
 # Display me.nu
 #
 # Usage:
@@ -37,6 +20,24 @@ $env.nu_menu_commands = {
 # - If the match starts with a Space, the command is not executed
 #   but sent to the command line for further editing
 def --env show_quick_menu [] {
+    
+    let example_config = '
+    # Example config. Place it in your `config.nu`
+    $env.nu_menu_commands = {
+        {
+            description: "Refresh nu"
+            keymap: "r"
+            command: { nu }
+        }
+        {
+            description: "Git Status"
+            keymap: "gs"
+            command: { git status }
+            group: "Git"
+        }
+    }
+    '
+  
     # Sanity check + error message
     if not ("nu_menu_commands" in $env) {
         print $"\n(ansi red)Error: env.nu_menu_commands is not set!(ansi reset)\n"
@@ -65,7 +66,7 @@ def --env show_quick_menu [] {
         command: record     # Command to render
         key_color: string   # Highlight color for the keymap
         desc_color: string  # Highlight color for description's Capital letters
-    ] -> string {
+    ]: any -> string {
         let keymap_box = $command.keymap
         | fill -w ($max_len + 2) -a center -c ' '
 
@@ -83,14 +84,14 @@ def --env show_quick_menu [] {
         desc_color: string      # Highlight color for description's Capital letters
         col_w: int = 25         # Commands' fill width
         n_cols: int = 2         # Number of columns per row
-    ] -> string {
+    ]: any -> string {
         $commands
         | each { render command $in $key_color $desc_color }
         | chunks $n_cols
         | each {|row|
             mut row = $row
             while ($row | length) < $n_cols {
-                $row ++= ''
+                $row ++= [ '' ]
             }
 
             $row

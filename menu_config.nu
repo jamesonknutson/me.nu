@@ -115,11 +115,6 @@ $env.nu_menu_commands = [
         group: "Git"
     }
     {
-        description: "Vim in Directory"
-        keymap: "vd"
-        command: { nvim . }
-    }
-    {
         description: "Refresh nu"
         keymap: "r"
         command: { nu }
@@ -128,10 +123,5 @@ $env.nu_menu_commands = [
         description: "Clear"
         keymap: "c"
         command: { clear }
-    }
-    {
-        description: "Hello"
-        keymap: "h"
-        command: { print "Hello" }
     }
 ]
