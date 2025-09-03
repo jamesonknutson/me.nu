@@ -20,6 +20,7 @@ $env.config.keybindings ++= [{
 # - If the match starts with a Space, the command is not executed
 #   but sent to the command line for further editing
 def --env show_quick_menu [] {
+  print $"show_quick_menu hit"
     
     let example_config = '
     # Example config. Place it in your `config.nu`
@@ -67,6 +68,7 @@ def --env show_quick_menu [] {
         key_color: string   # Highlight color for the keymap
         desc_color: string  # Highlight color for description's Capital letters
     ]: any -> string {
+        print $"render command hit"
         let keymap_box = $command.keymap
         | fill -w ($max_len + 2) -a center -c ' '
 
@@ -85,6 +87,8 @@ def --env show_quick_menu [] {
         col_w: int = 25         # Commands' fill width
         n_cols: int = 2         # Number of columns per row
     ]: any -> string {
+        print $"render group hit"
+      
         $commands
         | each { render command $in $key_color $desc_color }
         | chunks $n_cols
@@ -106,6 +110,8 @@ def --env show_quick_menu [] {
         cmd:string = "",            # Command to filter
         edit_mode: bool = false     # Edit mode toggle
     ] {
+        print $"render full hit"
+      
         # Prepare the table output + customization
         $env.config.table.mode = 'rounded'
         $env.config.table.index_mode = 'never'
